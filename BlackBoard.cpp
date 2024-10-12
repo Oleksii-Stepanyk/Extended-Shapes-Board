@@ -1,8 +1,10 @@
 #include "BlackBoard.h"
 #include <iostream>
+#include <bits/ranges_algobase.h>
 
 BlackBoard::BlackBoard(const int width, const int height) : grid(height, std::vector(width, ' '))
 {
+    selectedShape = nullptr;
     boardWidth = width;
     boardHeight = height;
 }
@@ -12,7 +14,7 @@ void BlackBoard::draw()
     std::cout << "Board: \n";
     for (auto& i : grid)
     {
-        for (char j : i)
+        for (const char j : i)
         {
             std::cout << j;
         }
@@ -27,7 +29,7 @@ void BlackBoard::list() const
         std::cout << "No shapes\n";
         return;
     }
-    for (auto shape : shapes)
+    for (const auto shape : shapes)
     {
         std::cout << shape->toString(false) << '\n';
     }
@@ -41,7 +43,7 @@ void BlackBoard::showShapes()
     }
 }
 
-void BlackBoard::addShape(std::vector<std::string>& parameters)
+void BlackBoard::addShape(const std::vector<std::string>& parameters)
 {
     if (parameters.size() < 6 || parameters.size() > 7)
     {
@@ -50,6 +52,7 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
     else if (parameters[0] == "circle" && parameters.size() == 6)
     {
         const bool isFill = parameters[1] == "fill";
+        const std::string type = parameters[1];
         const std::string color = parameters[2];
         const int radius = std::stoi(parameters[3]);
         const int x = std::stoi(parameters[4]);
@@ -60,8 +63,8 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
             std::cout << "Circle is completely out of bounds\n";
             return;
         }
-        auto* circle = new Circle(shapes.size() + 1, radius, x, y);
-        for (auto shape : shapes)
+        auto* circle = new Circle(shapes.size() + 1, type, color, radius, x, y);
+        for (const auto shape : shapes)
         {
             if (const auto* currentShape = dynamic_cast<Circle*>(shape); currentShape != nullptr)
             {
@@ -73,11 +76,13 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
                 }
             }
         }
-        _updateBoard(circle, isFill);
+        shapes.push_back(circle);
+        _insertShape(circle, isFill);
     }
     else if (parameters[0] == "rectangle" && parameters.size() == 7)
     {
         const bool isFill = parameters[1] == "fill";
+        const std::string type = parameters[1];
         const std::string color = parameters[2];
         const int width = std::stoi(parameters[3]);
         const int height = std::stoi(parameters[4]);
@@ -89,12 +94,12 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
             std::cout << "Rectangle is completely out of bounds\n";
             return;
         }
-        auto* rectangle = new Rectangle(shapes.size() + 1, width, height, x, y);
-        for (auto shape : shapes)
+        auto* rectangle = new Rectangle(shapes.size() + 1, type, color, width, height, x, y);
+        for (const auto shape : shapes)
         {
             if (const auto* currentShape = dynamic_cast<Rectangle*>(shape); currentShape != nullptr)
             {
-                if (*currentShape==*rectangle)
+                if (*currentShape == *rectangle)
                 {
                     std::cout << "Rectangle is overlapping with another rectangle\n";
                     delete rectangle;
@@ -102,11 +107,13 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
                 }
             }
         }
-        _updateBoard(rectangle, isFill);
+        shapes.push_back(rectangle);
+        _insertShape(rectangle, isFill);
     }
     else if (parameters[0] == "triangle" && parameters.size() == 6)
     {
         const bool isFill = parameters[1] == "fill";
+        const std::string type = parameters[1];
         const std::string color = parameters[2];
         const int height = std::stoi(parameters[3]);
         const int x = std::stoi(parameters[4]);
@@ -117,19 +124,20 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
             std::cout << "Triangle is completely out of bounds\n";
             return;
         }
-        for (auto shape : shapes)
+        auto* triangle = new Triangle(shapes.size() + 1, type, color, height, x, y);
+        for (const auto shape : shapes)
         {
             if (const auto* currentShape = dynamic_cast<Triangle*>(shape); currentShape != nullptr)
             {
-                if (currentShape->getX() == x && currentShape->getY() == y && currentShape->getHeight() == height)
+                if (*currentShape == *triangle)
                 {
                     std::cout << "Triangle is overlapping with another triangle\n";
                     return;
                 }
             }
         }
-        auto* triangle = new Triangle(shapes.size() + 1, height, x, y);
-        _updateBoard(triangle, isFill);
+        shapes.push_back(triangle);
+        _insertShape(triangle, isFill);
     }
     else if (parameters[0] == "line" && parameters.size() == 6)
     {
@@ -145,25 +153,93 @@ void BlackBoard::addShape(std::vector<std::string>& parameters)
             std::cout << "Line is completely out of bounds\n";
             return;
         }
-        for (auto shape : shapes)
+        auto* line = new Line(shapes.size() + 1, "frame", color, x, y, x2, y2);
+        for (const auto shape : shapes)
         {
             if (const auto* currentShape = dynamic_cast<Line*>(shape); currentShape != nullptr)
             {
-                if (currentShape->getX() == x && currentShape->getY() == y && currentShape->getX2() == x2 &&
-                    currentShape->getY2() == y2)
+                if (*currentShape == *line)
                 {
                     std::cout << "Line is overlapping with another line\n";
                     return;
                 }
             }
         }
-        auto* line = new Line(shapes.size() + 1, x, y, x2, y2);
-        _updateBoard(line, isFill);
+        shapes.push_back(line);
+        _insertShape(line, isFill);
     }
     else
     {
         std::cout << "Invalid command\n";
     }
+}
+
+void BlackBoard::select(const std::string& id)
+{
+    for (const auto shape : shapes)
+    {
+        if (shape->getID() == std::stoi(id))
+        {
+            selectedShape = shape;
+            return;
+        }
+    }
+}
+
+void BlackBoard::select(const std::vector<std::string>& parameters)
+{
+}
+
+void BlackBoard::remove()
+{
+    if (selectedShape == nullptr)
+    {
+        std::cout << "No shape selected\n";
+        return;
+    }
+    for (int i = 0; i < shapes.size(); i++)
+    {
+        if (shapes[i] == selectedShape)
+        {
+            shapes.erase(shapes.begin() + i);
+            break;
+        }
+    }
+    _redrawBoard();
+}
+
+void BlackBoard::edit(const std::vector<std::string>&)
+{
+    if (selectedShape == nullptr)
+    {
+        std::cout << "No shape selected\n";
+        return;
+    }
+}
+
+void BlackBoard::paint(const std::string& newColor)
+{
+    if (selectedShape == nullptr)
+    {
+        std::cout << "No shape selected\n";
+        return;
+    }
+    selectedShape->setColor(newColor);
+    _redrawBoard();
+}
+
+void BlackBoard::move(const std::vector<std::string>& coords)
+{
+    if (selectedShape == nullptr)
+    {
+        std::cout << "No shape selected\n";
+        return;
+    }
+    selectedShape->setX(std::stoi(coords[0]));
+    selectedShape->setY(std::stoi(coords[1]));
+    shapes.erase(std::ranges::find(shapes, selectedShape));
+    shapes.push_back(selectedShape);
+    _redrawBoard();
 }
 
 void BlackBoard::clear()
@@ -176,16 +252,6 @@ void BlackBoard::clear()
     shapes.clear();
 }
 
-std::vector<std::string> BlackBoard::_getShapes()
-{
-    std::vector<std::string> shapeCommands;
-    for (auto shape : shapes)
-    {
-        shapeCommands.push_back(shape->toString(true));
-    }
-    return shapeCommands;
-}
-
 std::string BlackBoard::getHeight() const
 {
     return std::to_string(boardHeight);
@@ -196,8 +262,52 @@ std::string BlackBoard::getWidth() const
     return std::to_string(boardWidth);
 }
 
-void BlackBoard::_updateBoard(Shape* shape, bool isFill)
+std::vector<std::string> BlackBoard::_getShapes()
 {
-    shapes.push_back(shape);
-    shape->draw(isFill);
+    std::vector<std::string> shapeCommands;
+    for (const auto shape : shapes)
+    {
+        shapeCommands.push_back(shape->toString(true));
+    }
+    return shapeCommands;
+}
+
+void BlackBoard::_insertShape(Shape* shape, bool isFill)
+{
+    std::vector<std::vector<char>> shapeGrid;
+    if (auto curShape = dynamic_cast<Circle*>(shape))
+    {
+        shapeGrid = curShape->draw(isFill);
+    }
+    else if (auto curShape = dynamic_cast<Rectangle*>(shape))
+    {
+        shapeGrid = curShape->draw(isFill);
+    }
+    else if (auto curShape = dynamic_cast<Triangle*>(shape))
+    {
+        shapeGrid = curShape->draw(isFill);
+    }
+    else if (auto curShape = dynamic_cast<Line*>(shape))
+    {
+        shapeGrid = curShape->draw(isFill);
+    }
+    for (int i = 0; i < shapeGrid.size(); i++)
+    {
+        for (int j = 0; j < shapeGrid[i].size(); j++)
+        {
+            if (shapeGrid[i][j] != ' ')
+            {
+                grid[shape->getY() + i][shape->getX() + j] = shapeGrid[i][j];
+            }
+        }
+    }
+}
+
+void BlackBoard::_redrawBoard()
+{
+    grid = std::vector(boardHeight, std::vector(boardWidth, ' '));
+    for (const auto shape : shapes)
+    {
+        _insertShape(shape, shape->getType() == "fill");
+    }
 }

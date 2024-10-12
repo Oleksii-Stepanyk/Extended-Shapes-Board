@@ -76,9 +76,32 @@ void UIKernel::parseCommand(const std::string& input, bool& isOkay)
         args.erase(args.begin());
         board->addShape(args);
     }
-    else if (args[0] == "undo")
+    else if (args[0] == "select" && args.size() == 2)
     {
-        board->undo();
+        board->select(args[1]);
+    }
+    else if (args[0] == "select" && args.size() == 3)
+    {
+        args.erase(args.begin());
+        board->select(args);
+    }
+    else if (args[0] == "remove")
+    {
+        board->remove();
+    }
+    else if (args[0] == "edit")
+    {
+        args.erase(args.begin());
+        board->edit(args);
+    }
+    else if (args[0] == "paint" && args.size() == 2)
+    {
+        board->paint(args[1]);
+    }
+    else if (args[0] == "move" && args.size() == 3)
+    {
+        args.erase(args.begin());
+        board->move(args);
     }
     else if (args[0] == "clear")
     {
