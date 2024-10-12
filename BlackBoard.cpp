@@ -1,6 +1,18 @@
 #include "BlackBoard.h"
 #include <iostream>
-#include <bits/ranges_algobase.h>
+#include <sstream>
+
+std::vector<std::string> split(const std::string& str, const char& delimiter)
+{
+    std::vector<std::string> result;
+    std::stringstream ss(str);
+    std::string item;
+    while (getline(ss, item, delimiter))
+    {
+        result.push_back(item);
+    }
+    return result;
+}
 
 BlackBoard::BlackBoard(const int width, const int height) : grid(height, std::vector(width, ' '))
 {
@@ -176,6 +188,11 @@ void BlackBoard::addShape(const std::vector<std::string>& parameters)
 
 void BlackBoard::select(const std::string& id)
 {
+    if (std::stoi(id) > shapes.size())
+    {
+        std::cout << "Invalid ID\n";
+        return;
+    }
     for (const auto shape : shapes)
     {
         if (shape->getID() == std::stoi(id))
@@ -186,8 +203,26 @@ void BlackBoard::select(const std::string& id)
     }
 }
 
-void BlackBoard::select(const std::vector<std::string>& parameters)
+void BlackBoard::select(const std::vector<std::string>& parameters) //TODO: Different select for different figures
 {
+    int x = std::stoi(parameters[0]);
+    int y = std::stoi(parameters[1]);
+
+    for (int i = shapes.size() - 1; i >= 0; --i)
+    {
+        auto shape = shapes[i];
+        auto shapeGrid = shape->draw(shape->getType() == "fill");
+        int shapeX = shape->getX();
+        int shapeY = shape->getY();
+        if (y - shapeY >= 0 && y - shapeY < shapeGrid.size() && x - shapeX >= 0 && x - shapeX < shapeGrid[0].size() &&
+            shapeGrid[y - shapeY][x - shapeX] != ' ')
+        {
+            selectedShape = shape;
+            return;
+        }
+    }
+
+    std::cout << "No shape found at the given coordinates\n";
 }
 
 void BlackBoard::remove()
@@ -208,13 +243,30 @@ void BlackBoard::remove()
     _redrawBoard();
 }
 
-void BlackBoard::edit(const std::vector<std::string>&)
+void BlackBoard::edit(const std::vector<std::string>& args)
 {
+    if (args.size() < 1 || args.size() > 4)
+    {
+        std::cout << "Invalid parameters count\n";
+        return;
+    }
     if (selectedShape == nullptr)
     {
         std::cout << "No shape selected\n";
         return;
     }
+    std::string id = std::to_string(selectedShape->getID());
+    std::string shape = selectedShape->toString(true);
+    std::vector<std::string> parameters = split(shape, ' ');
+    for (int i = 0; i < args.size(); ++i)
+    {
+        parameters[i + 4] = args[i];
+    }
+    parameters.erase(parameters.begin());
+    shapes.erase(std::ranges::find(shapes, selectedShape));
+    addShape(parameters);
+    select(id);
+    _redrawBoard();
 }
 
 void BlackBoard::paint(const std::string& newColor)
@@ -295,7 +347,8 @@ void BlackBoard::_insertShape(Shape* shape, bool isFill)
     {
         for (int j = 0; j < shapeGrid[i].size(); j++)
         {
-            if (shapeGrid[i][j] != ' ')
+            if (shapeGrid[i][j] != ' ' && shape->getX() + j >= 0 && shape->getY() + i >= 0 && shape->getY() + i <
+                boardHeight && shape->getX() + j < boardWidth)
             {
                 grid[shape->getY() + i][shape->getX() + j] = shapeGrid[i][j];
             }

@@ -3,18 +3,6 @@
 #include "UIKernel.h"
 #include "FileHandler.h"
 
-std::vector<std::string> split(const std::string& str, const char& delimiter)
-{
-    std::vector<std::string> result;
-    std::stringstream ss(str);
-    std::string item;
-    while (getline(ss, item, delimiter))
-    {
-        result.push_back(item);
-    }
-    return result;
-}
-
 std::string to_lower(const std::string& str)
 {
     std::string result = str;

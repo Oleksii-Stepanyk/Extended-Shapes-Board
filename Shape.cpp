@@ -58,7 +58,7 @@ Circle::Circle(const int id, const std::string& type, const std::string& color, 
 std::string Circle::toString(bool isCommand)
 {
     const std::string var = Shape::toString(isCommand);
-    return var + " circle " + std::to_string(radius)
+    return var + " circle " + type + ' ' + color + ' ' + std::to_string(radius)
         + ' ' + std::to_string(x) + ' ' + std::to_string(y);
 }
 
@@ -71,6 +71,12 @@ std::vector<std::vector<char>> Circle::draw(bool Fill)
         {
             double distance = sqrt((i - radius) * (i - radius) + (j - radius) * (j - radius));
             if (distance > radius - 0.65 && distance < radius + 0.2)
+            {
+                int gridX = j;
+                int gridY = i;
+                figureGrid[gridY][gridX] = color[0];
+            }
+            else if (Fill && distance <= radius - 0.65)
             {
                 int gridX = j;
                 int gridY = i;
@@ -97,7 +103,7 @@ Rectangle::Rectangle(const int id, const std::string& type, const std::string& c
 std::string Rectangle::toString(bool isCommand)
 {
     const std::string var = Shape::toString(isCommand);
-    return var + " rectangle " + std::to_string(width) + ' ' + std::to_string(height)
+    return var + " rectangle " + type + ' ' + color + ' ' + std::to_string(width) + ' ' + std::to_string(height)
         + ' ' + std::to_string(x) + ' ' + std::to_string(y);
 }
 
@@ -113,6 +119,16 @@ std::vector<std::vector<char>> Rectangle::draw(bool Fill)
     {
         figureGrid[i][0] = color[0];
         figureGrid[i][width - 1] = color[0];
+    }
+    if (Fill)
+    {
+        for (int i = 1; i < height - 1; ++i)
+        {
+            for (int j = 1; j < width - 1; ++j)
+            {
+                figureGrid[i][j] = color[0];
+            }
+        }
     }
     return figureGrid;
 }
@@ -133,24 +149,32 @@ Triangle::Triangle(const int id, const std::string& type, const std::string& col
 std::string Triangle::toString(bool isCommand)
 {
     const std::string var = Shape::toString(isCommand);
-    return var + " triangle " + std::to_string(height)
+    return var + " triangle " + type + ' ' + color + ' ' + std::to_string(height)
         + ' ' + std::to_string(x) + ' ' + std::to_string(y);;
 }
 
 std::vector<std::vector<char>> Triangle::draw(bool Fill)
 {
     int width = 2 * height - 1;
-    std::vector figureGrid(height + 1, std::vector(width + 1, ' '));
+    std::vector figureGrid(height, std::vector(width, ' '));
     for (int i = 0; i < height; ++i)
     {
-        int leftMost = width - i;
-        int rightMost = width + i;
+        int leftMost = height - 1 - i;
+        int rightMost = height - 1 + i;
         figureGrid[i][leftMost] = color[0];
         figureGrid[i][rightMost] = color[0];
+
+        if (Fill)
+        {
+            for (int j = leftMost + 1; j < rightMost; ++j)
+            {
+                figureGrid[i][j] = color[0];
+            }
+        }
     }
     for (int j = 0; j < width; ++j)
     {
-        int baseX = height + 1 + j;
+        int baseX = j;
         int baseY = height - 1;
         figureGrid[baseY][baseX] = color[0];
     }
@@ -172,19 +196,18 @@ Line::Line(const int id, const std::string& type, const std::string& color, cons
 std::string Line::toString(bool isCommand)
 {
     const std::string var = Shape::toString(isCommand);
-    return var + " line " + std::to_string(x) + ' ' + std::to_string(y)
+    return var + " line " + color + ' ' + std::to_string(x) + ' ' + std::to_string(y)
         + ' ' + std::to_string(x2) + ' ' + std::to_string(y2);
 }
 
-std::vector<std::vector<char>> Line::draw(bool Fill)
+std::vector<std::vector<char>> Line::draw(bool)
 {
-    int dx = abs(x - x2);
+    int width = std::max(x, x2) + 1;
+    int height = std::max(y, y2) + 1;
+    std::vector grid(height, std::vector<char>(width, ' '));
+
+    int dx = abs(x2 - x);
     int dy = abs(y2 - y);
-    std::vector figureGrid(2*dy+1, std::vector(2*dx+1, ' '));
-    int x = (2 * dx - 1) / 2;
-    int y = (2 * dy - 1) / 2;
-    int x2 = this->x2 - x;
-    int y2 = this->y2 - y;
     int sx = (x < x2) ? 1 : -1;
     int sy = (y < y2) ? 1 : -1;
 
@@ -192,7 +215,10 @@ std::vector<std::vector<char>> Line::draw(bool Fill)
 
     while (true)
     {
-        figureGrid[x][y] = color[0];
+        if (x >= 0 && x < width && y >= 0 && y < height)
+        {
+            grid[y][x] = color[0];
+        }
 
         if (x == x2 && y == y2) break;
         int e2 = 2 * err;
@@ -208,7 +234,8 @@ std::vector<std::vector<char>> Line::draw(bool Fill)
             y += sy;
         }
     }
-    return figureGrid;
+
+    return grid;
 }
 
 bool Line::operator==(const Line& other) const

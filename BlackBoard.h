@@ -2,6 +2,8 @@
 #include <vector>
 #include "Shape.h"
 
+std::vector<std::string> split(const std::string& str, const char& delimiter);
+
 class BlackBoard
 {
     std::string availableShapes[4] = {
