@@ -33,6 +33,12 @@ UIKernel::UIKernel()
     board = std::make_unique<BlackBoard>(width, height);
 }
 
+UIKernel::~UIKernel()
+{
+    board->clear();
+    board.reset();
+}
+
 void UIKernel::startProgram()
 {
     std::string input;

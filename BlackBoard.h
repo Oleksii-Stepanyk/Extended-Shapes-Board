@@ -5,20 +5,14 @@
 class BlackBoard
 {
     std::string availableShapes[4] = {
-        "circle radius coordinates", "rectangle width height coordinates",
-        "triangle height coordinates","line coordStart coordEnd" };
+        "circle fill|frame color radius coordinates", "rectangle fill|frame color width height coordinates",
+        "triangle fill|frame color height coordinates","line color coordStart coordEnd" };
 
-bool canUndo = false;
 int boardWidth = 0;
 int boardHeight = 0;
 std::vector<Shape*> shapes;
-std::vector<std::vector<char>> previousGrid;
 std::vector<std::vector<char>> grid;
-
-void drawCircle(int, int, int);
-void drawRectangle(int, int, int, int);
-void drawTriangle(int, int, int);
-void drawLine(int, int, int, int);
+void _updateBoard(Shape*, bool);
 
 public
 :
@@ -28,7 +22,6 @@ void draw();
 void list() const;
 void showShapes();
 void addShape(std::vector<std::string>& parameters);
-void undo();
 void clear();
 
 std::vector<std::string> _getShapes();

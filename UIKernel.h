@@ -9,7 +9,7 @@ class UIKernel
 
 public:
     UIKernel();
-    ~UIKernel() = default;
+    ~UIKernel();
     void startProgram();
     void parseCommand(const std::string&, bool& isOkay);
     void loadFile(const std::string&);

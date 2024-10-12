@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 class Shape
 {
@@ -16,6 +17,8 @@ public:
     std::string getType() const;
     int getX() const;
     int getY() const;
+    virtual std::vector<std::vector<char>> draw(bool);
+    virtual std::string toString(bool);
 };
 
 class Circle final : public Shape
@@ -25,6 +28,9 @@ class Circle final : public Shape
 public:
     Circle(int, int, int, int);
     int getRadius() const;
+    std::vector<std::vector<char>> draw(bool) override;
+    std::string toString(bool) override;
+    bool operator == (const Circle&) const;
 };
 
 class Rectangle final : public Shape
@@ -36,6 +42,9 @@ public:
     Rectangle(int, int, int, int, int);
     int getWidth() const;
     int getHeight() const;
+    std::vector<std::vector<char>> draw(bool) override;
+    std::string toString(bool) override;
+    bool operator == (const Rectangle&) const;
 };
 
 class Triangle final : public Shape
@@ -45,6 +54,9 @@ class Triangle final : public Shape
 public:
     Triangle(int, int, int, int);
     int getHeight() const;
+    std::vector<std::vector<char>> draw(bool) override;
+    std::string toString(bool) override;
+    bool operator == (const Triangle&) const;
 };
 
 class Line final : public Shape
@@ -56,4 +68,7 @@ public:
     Line(int, int, int, int, int);
     int getX2() const;
     int getY2() const;
+    std::vector<std::vector<char>> draw(bool) override;
+    std::string toString(bool) override;
+    bool operator == (const Line&) const;
 };
