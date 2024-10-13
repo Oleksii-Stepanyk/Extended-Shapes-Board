@@ -61,7 +61,7 @@ void UIKernel::parseCommand(const std::string& input, bool& isOkay)
     else if (args[0] == "add")
     {
         args.erase(args.begin());
-        board->addShape(args);
+        board->addShape(args, isOkay);
     }
     else if (args[0] == "select" && args.size() == 2)
     {
@@ -130,7 +130,7 @@ void UIKernel::loadFile(const std::string& path)
     }
 
     std::vector<std::string> lines = split(data, '\n');
-    if (lines[0] != "board version 1.0")
+    if (lines[0] != "board version 2.0")
     {
         std::cout << "Error: Invalid file format.\n";
         return;
@@ -163,7 +163,7 @@ void UIKernel::saveFile(const std::string& path) const
         return;
     }
 
-    file.writeData("board version 1.0\n");
+    file.writeData("board version 2.0\n");
     file.writeData(board->getWidth() + ' ' + board->getHeight() + '\n');
 
     auto shapes = board->_getShapes();

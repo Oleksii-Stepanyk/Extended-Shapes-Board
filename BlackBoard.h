@@ -26,7 +26,7 @@ public
     void draw();
     void list() const;
     void showShapes();
-    void addShape(const std::vector<std::string>&);
+    void addShape(const std::vector<std::string>&, bool&);
     void select(const std::string&);
     void select(const std::vector<std::string>&);
     void remove();

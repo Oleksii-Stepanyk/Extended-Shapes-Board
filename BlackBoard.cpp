@@ -57,11 +57,12 @@ void BlackBoard::showShapes()
     }
 }
 
-void BlackBoard::addShape(const std::vector<std::string>& parameters)
+void BlackBoard::addShape(const std::vector<std::string>& parameters, bool& isOkay)
 {
     if (parameters.size() < 6 || parameters.size() > 7)
     {
         std::cout << "Invalid parameters\n";
+        isOkay = false;
     }
     else if (parameters[0] == "circle" && parameters.size() == 6)
     {
@@ -86,6 +87,7 @@ void BlackBoard::addShape(const std::vector<std::string>& parameters)
                 {
                     std::cout << "Circle is overlapping with another circle\n";
                     delete circle;
+                    isOkay = false;
                     return;
                 }
             }
@@ -117,6 +119,7 @@ void BlackBoard::addShape(const std::vector<std::string>& parameters)
                 {
                     std::cout << "Rectangle is overlapping with another rectangle\n";
                     delete rectangle;
+                    isOkay = false;
                     return;
                 }
             }
@@ -146,6 +149,8 @@ void BlackBoard::addShape(const std::vector<std::string>& parameters)
                 if (*currentShape == *triangle)
                 {
                     std::cout << "Triangle is overlapping with another triangle\n";
+                    delete triangle;
+                    isOkay = false;
                     return;
                 }
             }
@@ -175,6 +180,8 @@ void BlackBoard::addShape(const std::vector<std::string>& parameters)
                 if (*currentShape == *line)
                 {
                     std::cout << "Line is overlapping with another line\n";
+                    delete line;
+                    isOkay = false;
                     return;
                 }
             }
@@ -185,6 +192,7 @@ void BlackBoard::addShape(const std::vector<std::string>& parameters)
     else
     {
         std::cout << "Invalid command\n";
+        isOkay = false;
     }
 }
 
@@ -207,8 +215,8 @@ void BlackBoard::select(const std::string& id)
 
 void BlackBoard::select(const std::vector<std::string>& parameters)
 {
-    int x = std::stoi(parameters[0]);
-    int y = std::stoi(parameters[1]);
+    const int x = std::stoi(parameters[0]);
+    const int y = std::stoi(parameters[1]);
 
     for (int i = shapes.size() - 1; i >= 0; --i)
     {
@@ -219,9 +227,9 @@ void BlackBoard::select(const std::vector<std::string>& parameters)
 
         if (auto curShape = dynamic_cast<Circle*>(shape))
         {
-            int radius = curShape->getRadius();
-            double distance = sqrt((x - shapeX) * (x - shapeX) + (y - shapeY) * (y - shapeY));
-            if (distance <= radius)
+            const int radius = curShape->getRadius();
+            if (const double distance = sqrt((x - shapeX) * (x - shapeX) + (y - shapeY) * (y - shapeY)); distance <=
+                radius)
             {
                 selectedShape = shape;
                 return;
@@ -229,8 +237,8 @@ void BlackBoard::select(const std::vector<std::string>& parameters)
         }
         else if (auto curShape = dynamic_cast<Rectangle*>(shape))
         {
-            int width = curShape->getWidth();
-            int height = curShape->getHeight();
+            const int width = curShape->getWidth();
+            const int height = curShape->getHeight();
             if (x >= shapeX && x < shapeX + width && y >= shapeY && y < shapeY + height)
             {
                 selectedShape = shape;
@@ -239,9 +247,9 @@ void BlackBoard::select(const std::vector<std::string>& parameters)
         }
         else if (auto curShape = dynamic_cast<Triangle*>(shape))
         {
-            int height = curShape->getHeight();
-            int baseX = shapeX;
-            int baseY = shapeY + height - 1;
+            const int height = curShape->getHeight();
+            const int baseX = shapeX;
+            const int baseY = shapeY + height - 1;
             if (y >= shapeY && y <= baseY && x >= baseX - (y - shapeY) && x <= baseX + (y - shapeY))
             {
                 selectedShape = shape;
@@ -250,12 +258,12 @@ void BlackBoard::select(const std::vector<std::string>& parameters)
         }
         else if (auto curShape = dynamic_cast<Line*>(shape))
         {
-            int x2 = curShape->getX2();
-            int y2 = curShape->getY2();
-            int dx = abs(x2 - shapeX);
-            int dy = abs(y2 - shapeY);
-            int sx = (shapeX < x2) ? 1 : -1;
-            int sy = (shapeY < y2) ? 1 : -1;
+            const int x2 = curShape->getX2();
+            const int y2 = curShape->getY2();
+            const int dx = abs(x2 - shapeX);
+            const int dy = abs(y2 - shapeY);
+            const int sx = (shapeX < x2) ? 1 : -1;
+            const int sy = (shapeY < y2) ? 1 : -1;
             int err = dx - dy;
 
             while (true)
@@ -266,7 +274,7 @@ void BlackBoard::select(const std::vector<std::string>& parameters)
                     return;
                 }
                 if (shapeX == x2 && shapeY == y2) break;
-                int e2 = 2 * err;
+                const int e2 = 2 * err;
                 if (e2 > -dy)
                 {
                     err -= dy;
@@ -322,7 +330,14 @@ void BlackBoard::edit(const std::vector<std::string>& args)
     }
     parameters.erase(parameters.begin());
     shapes.erase(std::ranges::find(shapes, selectedShape));
-    addShape(parameters);
+    bool isOkay = true;
+    addShape(parameters, isOkay);
+    if (!isOkay)
+    {
+        shapes.push_back(selectedShape);
+        _redrawBoard();
+        return;
+    }
     select(id);
     _redrawBoard();
 }
@@ -377,7 +392,8 @@ std::vector<std::string> BlackBoard::_getShapes()
     std::vector<std::string> shapeCommands;
     for (const auto shape : shapes)
     {
-        shapeCommands.push_back(shape->toString(true));
+        std::string shapeCommand = shape->toString(true);
+        shapeCommands.push_back(shapeCommand);
     }
     return shapeCommands;
 }
@@ -390,8 +406,7 @@ void BlackBoard::_insertShape(Shape* shape, bool isFill)
         for (int j = 0; j < shapeGrid[i].size(); j++)
         {
             if (shapeGrid[i][j] != ' ' && shape->getX() + j >= 0 && shape->getY() + i >= 0 && shape->getY() + i
-                <
-                boardHeight && shape->getX() + j < boardWidth)
+                < boardHeight && shape->getX() + j < boardWidth)
             {
                 grid[shape->getY() + i][shape->getX() + j] = shapeGrid[i][j];
             }

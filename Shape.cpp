@@ -207,8 +207,8 @@ int Triangle::getHeight() const
 }
 
 // Line
-Line::Line(const int id, const std::string& type, const std::string& color, const int x2, const int y2, const int x,
-           const int y)
+Line::Line(const int id, const std::string& type, const std::string& color, const int x, const int y, const int x2,
+           const int y2)
     : Shape(id, "line", type, color, x, y), x2(x2), y2(y2)
 {
 }
@@ -224,6 +224,8 @@ std::vector<std::vector<char>> Line::draw(bool)
 {
     int width = std::max(x, x2) + 1;
     int height = std::max(y, y2) + 1;
+    int x = this->x;
+    int y = this->y;
     std::vector grid(height, std::vector<char>(width, ' '));
 
     int dx = abs(x2 - x);
