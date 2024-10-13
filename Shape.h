@@ -40,6 +40,7 @@ public:
     std::vector<std::vector<char>> draw(bool) override;
     std::string toString(bool) override;
     bool operator ==(const Circle&) const;
+    int getRadius() const;
 };
 
 class Rectangle final : public Shape
@@ -52,6 +53,8 @@ public:
     std::vector<std::vector<char>> draw(bool) override;
     std::string toString(bool) override;
     bool operator ==(const Rectangle&) const;
+    int getWidth() const;
+    int getHeight() const;
 };
 
 class Triangle final : public Shape
@@ -63,6 +66,7 @@ public:
     std::vector<std::vector<char>> draw(bool) override;
     std::string toString(bool) override;
     bool operator ==(const Triangle&) const;
+    int getHeight() const;
 };
 
 class Line final : public Shape
@@ -75,4 +79,6 @@ public:
     std::vector<std::vector<char>> draw(bool) override;
     std::string toString(bool) override;
     bool operator ==(const Line&) const;
+    int getX2() const;
+    int getY2() const;
 };

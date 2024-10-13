@@ -42,8 +42,7 @@ void UIKernel::startProgram()
 
 void UIKernel::parseCommand(const std::string& input, bool& isOkay)
 {
-    std::vector<std::string> args = split(input, ' ');
-    if (args.empty())
+    if (std::vector<std::string> args = split(input, ' '); args.empty())
     {
         std::cout << "Invalid command. Please try again.\n";
     }
@@ -155,7 +154,7 @@ void UIKernel::loadFile(const std::string& path)
     }
 }
 
-void UIKernel::saveFile(const std::string& path)
+void UIKernel::saveFile(const std::string& path) const
 {
     const FileHandler file(path, "w");
     if (!file.isOpen())

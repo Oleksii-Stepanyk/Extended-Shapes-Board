@@ -92,6 +92,11 @@ bool Circle::operator==(const Circle& other) const
     return x == other.x && y == other.y && radius == other.radius;
 }
 
+int Circle::getRadius() const
+{
+    return radius;
+}
+
 // Rectangle
 Rectangle::Rectangle(const int id, const std::string& type, const std::string& color, const int width, const int height,
                      const int x, const int y)
@@ -136,6 +141,16 @@ std::vector<std::vector<char>> Rectangle::draw(bool Fill)
 bool Rectangle::operator==(const Rectangle& other) const
 {
     return x == other.x && y == other.y && width == other.width && height == other.height;
+}
+
+int Rectangle::getWidth() const
+{
+    return width;
+}
+
+int Rectangle::getHeight() const
+{
+    return height;
 }
 
 // Triangle
@@ -184,6 +199,11 @@ std::vector<std::vector<char>> Triangle::draw(bool Fill)
 bool Triangle::operator==(const Triangle& other) const
 {
     return x == other.x && y == other.y && height == other.height;
+}
+
+int Triangle::getHeight() const
+{
+    return height;
 }
 
 // Line
@@ -241,4 +261,14 @@ std::vector<std::vector<char>> Line::draw(bool)
 bool Line::operator==(const Line& other) const
 {
     return x == other.x && y == other.y && x2 == other.x2 && y2 == other.y2;
+}
+
+int Line::getX2() const
+{
+    return x2;
+}
+
+int Line::getY2() const
+{
+    return y2;
 }
